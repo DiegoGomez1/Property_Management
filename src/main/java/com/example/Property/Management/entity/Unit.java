@@ -1,12 +1,18 @@
 package com.example.Property.Management.entity;
 
+import com.example.Property.Management.enums.LeaseStatus;
+import com.example.Property.Management.enums.UnitStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,29 +24,42 @@ import java.util.List;
 public class Unit {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int floor;
-    private String status;
-    private double squareFeet;
-    private int bedrooms;
-    private int bathrooms;
-    private String number;
+    @Column(nullable = false)
+    private String unitNumber;
 
-    // Many units belong to one building
+    private Integer bedrooms;
+    private Integer bathrooms;
+    private Double squareFeet;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal rentAmount;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal securityDepositAmount;
+
+    @Enumerated(EnumType.STRING)
+    private UnitStatus status = UnitStatus.VACANT;
+
+    @JsonBackReference("building-units")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id")
-    @JsonIgnore  // Prevent circular reference
+    @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
-    // One unit can have one lease
-    @OneToOne(mappedBy = "unit", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore  // Prevent circular reference
-    private Lease lease;
+    @JsonManagedReference("unit-leases")
+    @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL)
+    private List<Lease> leases = new ArrayList<>();
 
-    // One unit can have many tenants
-    @OneToMany(mappedBy = "unit", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore  // Prevent circular reference
-    private List<Tenant> tenants;
+    @JsonIgnore
+    @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL)
+    private List<MaintenanceRequest> maintenanceRequests = new ArrayList<>();
+
+    public Lease getCurrentLease() {
+        return leases.stream()
+                .filter(lease -> lease.getStatus() == LeaseStatus.ACTIVE)
+                .findFirst()
+                .orElse(null);
+    }
 }

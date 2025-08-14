@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Building2, Menu, X } from 'lucide-react';
 
 const PublicLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const location = useLocation(); // <-- get current path
 
   return (
     <div className="min-h-screen">
@@ -16,15 +17,15 @@ const PublicLayout = ({ children }) => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                 <Building2 className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">PropManage</span>
+              <span className="text-2xl font-bold text-gray-900">PropManage</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-12">
-              <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium text-base transition-colors px-2">
+            <nav className="hidden lg:flex items-center space-x-16">
+              <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors px-4">
                 Home
               </Link>
-              <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium text-base transition-colors px-2">
+              <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors px-4">
                 Dashboard
               </Link>
             </nav>
@@ -33,16 +34,20 @@ const PublicLayout = ({ children }) => {
             <div className="hidden md:flex items-center space-x-6">
               <Link 
                 to="/login" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-lg px-4 py-2"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-xl px-4 py-2"
               >
                 Sign In
               </Link>
-              <Link 
-                to="/dashboard" 
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-lg"
-              >
-                Get Started
-              </Link>
+
+              {/* Show Get Started only if NOT on homepage */}
+              {location.pathname !== '/' && (
+                <Link 
+                  to="/dashboard" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-xl"
+                >
+                  Get Started
+                </Link>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -80,13 +85,15 @@ const PublicLayout = ({ children }) => {
                   >
                     Sign In
                   </Link>
-                  <Link 
-                    to="/dashboard" 
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-lg text-center"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Get Started
-                  </Link>
+                  {location.pathname !== '/' && (
+                    <Link 
+                      to="/dashboard" 
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-lg text-center"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Get Started
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -98,7 +105,6 @@ const PublicLayout = ({ children }) => {
       <main className="pt-20">
         {children}
       </main>
-
     </div>
   );
 };
